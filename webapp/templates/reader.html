@@ -174,16 +174,18 @@
             });
 
             try {
-                const response = await fetch(`/api/chapter?url=${encodeURIComponent(chapter.url)}`);
+                // Check if auto-translate is enabled and get engine selection
+                const settings = JSON.parse(localStorage.getItem('novelReaderSettings') || '{}');
+                const shouldTranslate = settings.autoTranslate === true;
+                const translationEngine = settings.translationEngine || 'google_free';
+                
+                // Use server-side translation if enabled
+                const apiUrl = `/api/chapter?url=${encodeURIComponent(chapter.url)}&translate=${shouldTranslate}&engine=${encodeURIComponent(translationEngine)}`;
+                const response = await fetch(apiUrl);
                 const data = await response.json();
                 
-                let content = data.content;
-                
-                // Auto-translate to English if enabled
-                const settings = JSON.parse(localStorage.getItem('novelReaderSettings') || '{}');
-                if (settings.autoTranslate) {
-                    content = await translateToEnglish(content);
-                }
+                // Use translated content if available, otherwise fall back to original
+                let content = data.translated_content || data.content;
                 
                 chapterContent = content;
                 paragraphs = chapterContent.split('\n\n').filter(p => p.trim().length > 0);
@@ -197,6 +199,11 @@
                 document.getElementById('tts-total').textContent = paragraphs.length;
                 currentParagraph = 0;
                 stopTTS();
+                
+                // Show translation indicator if translated
+                if (data.is_translated) {
+                    console.log(`Translated using ${data.translation_engine}`);
+                }
                 
                 // Scroll to top
                 document.querySelector('.reader-content').scrollTop = 0;

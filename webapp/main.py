@@ -153,16 +153,49 @@ async def api_novel_info(url: str = Query(...)):
 
 
 @app.get("/api/chapter")
-async def api_chapter(url: str = Query(...)):
-    """Extract chapter content"""
+async def api_chapter(url: str = Query(...), translate: bool = Query(False), engine: str = Query("google_free")):
+    """Extract chapter content with optional translation
+    
+    Query Parameters:
+        - url: Chapter URL to extract content from
+        - translate: Whether to translate the content (default: false)
+        - engine: Translation engine to use (default: google_free)
+            Options: google_free, bing_free, mymemory_free, pons_free, linguee_free, libre_free
+    """
     try:
         content = extract_chapter_content(url)
-        return {
+        result = {
             "title": content['title'],
             "content": content['content'],
             "confidence": content['confidence'],
             "url": url
         }
+        
+        # If translation is requested, use the translation service
+        if translate:
+            from webapp.services.translation_core import CompleteNovelTranslationManager
+            
+            # Validate engine selection
+            available_engines = CompleteNovelTranslationManager.get_available_engines()
+            if engine not in available_engines or not available_engines[engine].get('available', False):
+                engine = "google_free"  # Fallback to default
+            
+            try:
+                translated = CompleteNovelTranslationManager.translate_novel(
+                    full_text=result["content"],
+                    engine=engine,
+                    keys={},
+                    custom_prompt=None
+                )
+                result["translated_content"] = translated
+                result["is_translated"] = True
+                result["translation_engine"] = engine
+            except Exception as trans_error:
+                # If translation fails, log but don't fail the request
+                result["translation_error"] = str(trans_error)
+                result["is_translated"] = False
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
