@@ -1,4 +1,25 @@
 ```
+# Environment variables
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+target/
+
 # Python
 __pycache__/
 *.pyc
@@ -8,36 +29,73 @@ __pycache__/
 env/
 venv/
 .venv/
-.ENV
-.ENV.*
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/modules/
+*.sublime-project
+*.sublime-workspace
 .pytest_cache/
 .mypy_cache/
-.coverage
+.hypothesis/
+
+# Node.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+dist/
+build/
+.nyc_output
 coverage/
-htmlcov/
+.nyc_output/
+istanbul.yml
+.jscpd.json
+.nycrc
+.nycrc.json
+.coveralls.yml
+.taprc
+.lint-stagedrc
+.mocharc.json
+.mocharc.yaml
+.mocharc.yml
+.travis.yml
+.nvmrc
+.eslintcache
+.prettierignore
 
-# Logs
-*.log
-
-# Environment
-.env
-.env.local
-.env.*
-!.env.example
-
-# IDE
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
+*~
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Build artifacts
-dist/
-build/
-*.egg-info/
+ehthumbs.db
+Icon?
+apidoc/
+doc/
+docs/
+*.tmp
+*.temp
+*.log
+*.bak
+*.backup
+*~
+.DS_Store
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 ```
