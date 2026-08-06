@@ -1,18 +1,27 @@
 ```
-# Environment variables
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
 .env
 .env.local
 *.env.*
 
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.swp
-*.swo
+# Editors
+.vscode/
+.idea/
 
 # Dependencies
+.venv/
+venv/
 node_modules/
 
 # Build artifacts
@@ -20,82 +29,12 @@ dist/
 build/
 target/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.venv.bak/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
+# Coverage
 .coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.git/modules/
-*.sublime-project
-*.sublime-workspace
+coverage/
+htmlcov/
+
+# Testing
 .pytest_cache/
 .mypy_cache/
-.hypothesis/
-
-# Node.js
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-node_modules/
-dist/
-build/
-.nyc_output
-coverage/
-.nyc_output/
-istanbul.yml
-.jscpd.json
-.nycrc
-.nycrc.json
-.coveralls.yml
-.taprc
-.lint-stagedrc
-.mocharc.json
-.mocharc.yaml
-.mocharc.yml
-.travis.yml
-.nvmrc
-.eslintcache
-.prettierignore
-
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Icon?
-apidoc/
-doc/
-docs/
-*.tmp
-*.temp
-*.log
-*.bak
-*.backup
-*~
-.DS_Store
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 ```
