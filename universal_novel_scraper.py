@@ -485,8 +485,8 @@ def search_source(source_id: str, query: str) -> List[SearchResult]:
             latest_el = item.select_one(".latest-chapter, .last-chapter")
             latest_chapter = latest_el.get_text(strip=True) if latest_el else ""
             
-            # Extract cover image
-            cover_el = item.select_one("img.cover, img.book-cover, .cover img")
+            # Extract cover image - try multiple selectors for ixdzs8
+            cover_el = item.select_one("img.cover, img.book-cover, .cover img, .l-img img, div.l-img img")
             cover_url = urljoin(config["base_url"], cover_el.get("src", "")) if cover_el else ""
             
             # Extract rating if available
@@ -567,8 +567,11 @@ def search_source(source_id: str, query: str) -> List[SearchResult]:
             url = urljoin(config["base_url"], title_el.get("href", ""))
             author_el = item.select_one(".author")
             author = author_el.get_text(strip=True) if author_el else ""
-            cover_el = item.select_one("img.book-cover, img.cover, .cover img")
-            cover_url = urljoin(config["base_url"], cover_el.get("src", "")) if cover_el else ""
+            # Extract cover image - support both regular img and amp-img
+            cover_el = item.select_one("img.book-cover, img.cover, .cover img, amp-img")
+            if not cover_el:
+                cover_el = item.select_one(".l-img img, div.l-img img")
+            cover_url = urljoin(config["base_url"], cover_el.get("src", "") or cover_el.get("data-src", "")) if cover_el else ""
             rating_el = item.select_one(".rating, .score, .stars")
             rating = rating_el.get_text(strip=True) if rating_el else ""
             results.append(SearchResult(title=title, url=url, source=source_id, author=author, cover_url=cover_url, rating=rating))

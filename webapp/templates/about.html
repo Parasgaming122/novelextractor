@@ -1,111 +1,261 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - Novel Reader</title>
+    <title>API Documentation - Novel Reader</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { padding-top: 70px; }
+        .api-section { margin-bottom: 2rem; }
+        code { background-color: #f8f9fa; padding: 0.2rem 0.4rem; border-radius: 0.25rem; }
+        pre { background-color: #212529; color: #f8f9fa; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">📚 Novel Reader</div>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/sources">Sources</a></li>
-            <li><a href="/search">Search</a></li>
-            <li><a href="/favourites">Favourites</a></li>
-            <li><a href="/about" class="active">About</a></li>
-            <li><a href="/settings">Settings</a></li>
-        </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 Novel Reader</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/sources">Sources</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/favourites">Favourites</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/about">API Docs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
+                </ul>
+            </div>
+        </div>
     </nav>
 
-    <main class="container">
-        <section class="info-section">
-            <h1>📖 About Novel Reader</h1>
-            <p class="subtitle">Your ultimate destination for reading web novels from multiple sources</p>
+    <main class="container py-4">
+        <h1 class="mb-4"><i class="bi bi-code-slash"></i> API Documentation</h1>
+        <p class="lead text-muted mb-4">Complete reference for the Novel Reader REST API</p>
+        
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle"></i> 
+            <strong>Base URL:</strong> <code id="base-url">http://localhost:8000/</code>
+            <button class="btn btn-sm btn-outline-primary ms-2" onclick="copyBaseUrl()">Copy</button>
+        </div>
 
-            <div class="feature-card" style="margin-top: 2rem;">
-                <h3>🌟 Features</h3>
-                <ul style="list-style: none; padding: 0; line-height: 2;">
-                    <li>✅ <strong>Multi-Source Support:</strong> Search and read from 5+ novel websites</li>
-                    <li>✅ <strong>Auto-Translation:</strong> Translate Chinese novels to English using Google Translate</li>
-                    <li>✅ <strong>Text-to-Speech:</strong> Listen to your novels with customizable TTS voices</li>
-                    <li>✅ <strong>Favourites:</strong> Save your favorite novels for quick access</li>
-                    <li>✅ <strong>Clean UI:</strong> Ad-free reading experience with modern design</li>
-                    <li>✅ <strong>Smart Extraction:</strong> Intelligent chapter content extraction</li>
+        <!-- Search API -->
+        <div class="card shadow-sm mb-4 api-section">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-search"></i> Search & Discovery</h4>
+            </div>
+            <div class="card-body">
+                <h5>Search Novels</h5>
+                <p>Search for novels across all supported sources</p>
+                <div class="bg-light p-3 rounded mb-3"><code>GET /api/search?q={query}&sep={true|false}</code></div>
+                
+                <h6>Parameters:</h6>
+                <table class="table table-sm table-bordered">
+                    <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>q</code></td><td>string</td><td>Yes</td><td>Search query (novel title, author, keywords)</td></tr>
+                        <tr><td><code>sep</code></td><td>boolean</td><td>No</td><td>If true, groups results by source (default: false)</td></tr>
+                    </tbody>
+                </table>
+                
+                <h6>Example Request:</h6>
+                <pre><code>curl "http://localhost:8000/api/search?q=%E6%B4%AA%E8%8D%92&sep=false"</code></pre>
+                
+                <h6>Example Response:</h6>
+                <pre><code>{
+  "grouped": false,
+  "results": [{"title": "洪荒：我開局打造鴻蒙金榜", "url": "https://ixdzs8.com/book/123", "author": "作者名", "latest_chapter": "Chapter 500", "cover_url": "https://...", "source": "ixdzs8"}]
+}</code></pre>
+
+                <hr>
+                <h5>Get Home Feed</h5>
+                <p>Get hot novels and recommendations from sources</p>
+                <div class="bg-light p-3 rounded mb-3"><code>GET /api/feed?source={source}&page={number}</code></div>
+                
+                <h6>Parameters:</h6>
+                <table class="table table-sm table-bordered">
+                    <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>source</code></td><td>string</td><td>No</td><td>Specific source (ixdzs8, shuhaige, biquge, ttkan, xbiquge)</td></tr>
+                        <tr><td><code>page</code></td><td>integer</td><td>No</td><td>Page number for pagination (default: 1)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Novel Info API -->
+        <div class="card shadow-sm mb-4 api-section">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-book"></i> Novel Information</h4>
+            </div>
+            <div class="card-body">
+                <h5>Get Novel Details</h5>
+                <p>Retrieve complete novel metadata including chapter list</p>
+                <div class="bg-light p-3 rounded mb-3"><code>GET /api/novel-info?url={novel_url}</code></div>
+                
+                <h6>Example Request:</h6>
+                <pre><code>curl "http://localhost:8000/api/novel-info?url=https%3A%2F%2Fixdzs8.com%2Fbook%2F123"</code></pre>
+                
+                <h6>Example Response:</h6>
+                <pre><code>{
+  "title": "洪荒：我開局打造鴻蒙金榜",
+  "author": "作者名",
+  "status": "Ongoing",
+  "description": "故事简介...",
+  "cover_url": "https://...",
+  "chapters": [{"title": "Chapter 1", "url": "https://..."}],
+  "source": "ixdzs8"
+}</code></pre>
+
+                <hr>
+                <h5>Extract Chapter Content</h5>
+                <p>Extract clean chapter text from a chapter URL</p>
+                <div class="bg-light p-3 rounded mb-3"><code>GET /api/chapter?url={chapter_url}</code></div>
+                
+                <h6>Example Response:</h6>
+                <pre><code>{
+  "title": "Chapter 1: Rebirth",
+  "content": "The primordial world!\n\nA mysterious island...",
+  "confidence": 0.95,
+  "url": "https://..."
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Translation API -->
+        <div class="card shadow-sm mb-4 api-section">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="bi bi-translate"></i> Translation Engine</h4>
+            </div>
+            <div class="card-body">
+                <h5>List Available Engines</h5>
+                <div class="bg-light p-3 rounded mb-3"><code>GET /api/v1/novel/engines</code></div>
+                
+                <h6>Available Engines:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Free (No API Key)</h6>
+                        <ul>
+                            <li><code>google_free</code> - Google Translate</li>
+                            <li><code>bing_free</code> - Bing Translator</li>
+                            <li><code>mymemory_free</code> - MyMemory</li>
+                            <li><code>pons_free</code> - PONS Dictionary</li>
+                            <li><code>linguee_free</code> - Linguee</li>
+                            <li><code>libre_free</code> - LibreTranslate</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Premium (API Key Required)</h6>
+                        <ul>
+                            <li><code>gemini_premium</code> - Google Gemini AI</li>
+                            <li><code>openai_premium</code> - OpenAI GPT-4o</li>
+                            <li><code>deepl_premium</code> - DeepL Pro</li>
+                            <li><code>microsoft_premium</code> - Microsoft Translator</li>
+                            <li><code>baidu_premium</code> - Baidu Translate</li>
+                            <li><code>yandex_premium</code> - Yandex Translate</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr>
+                <h5>Translate Chapter</h5>
+                <div class="bg-light p-3 rounded mb-3"><code>POST /api/v1/novel/translate-chapter</code></div>
+                
+                <h6>Request Body:</h6>
+                <pre><code>{
+  "chapter_content": "这是要翻译的中文文本。",
+  "engine_selection": "google_free",
+  "user_keys": {"gemini_key": "AIzaSy...", "openai_key": "sk-proj-..."},
+  "custom_prompt": "Translate this wuxia novel maintaining martial arts terminology"
+}</code></pre>
+
+                <hr>
+                <h5>Batch Translate Paragraphs</h5>
+                <div class="bg-light p-3 rounded mb-3"><code>POST /api/v1/novel/translate-batch</code></div>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Vercel Serverless Note:</strong> For hobby tier (10s timeout), use batch translation in your frontend to send smaller chunks (3-5 paragraphs per request).
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Handling -->
+        <div class="card shadow-sm mb-4 api-section">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="bi bi-exclamation-octagon"></i> Error Handling</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-bordered">
+                    <thead><tr><th>Status Code</th><th>Meaning</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>200</code></td><td>OK</td><td>Request successful</td></tr>
+                        <tr><td><code>400</code></td><td>Bad Request</td><td>Invalid parameters or missing required fields</td></tr>
+                        <tr><td><code>404</code></td><td>Not Found</td><td>Endpoint or resource not found</td></tr>
+                        <tr><td><code>500</code></td><td>Server Error</td><td>Internal server error during processing</td></tr>
+                        <tr><td><code>504</code></td><td>Gateway Timeout</td><td>Request timeout (common on Vercel free tier)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Supported Sources -->
+        <div class="card shadow-sm mb-4 api-section">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="bi bi-globe"></i> Supported Sources</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead><tr><th>Source</th><th>Base URL</th><th>Search</th><th>Feed</th><th>Covers</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>ixdzs8</strong></td><td><a href="https://ixdzs8.com" target="_blank">ixdzs8.com</a></td><td>✅</td><td>✅ <code>/hot/day/</code></td><td>✅</td></tr>
+                        <tr><td><strong>shuhaige</strong></td><td><a href="https://shuhaige.net" target="_blank">shuhaige.net</a></td><td>✅</td><td>✅ <code>/shuku/</code></td><td>✅</td></tr>
+                        <tr><td><strong>biquge.company</strong></td><td><a href="https://www.biquge.company" target="_blank">biquge.company</a></td><td>✅</td><td>✅ <code>/sort/0/</code></td><td>✅</td></tr>
+                        <tr><td><strong>ttkan</strong></td><td><a href="https://www.ttkan.co" target="_blank">ttkan.co</a></td><td>✅</td><td>✅ <code>/novel/rank</code></td><td>✅</td></tr>
+                        <tr><td><strong>xbiquge</strong></td><td><a href="https://www.xbiquge.info" target="_blank">xbiquge.info</a></td><td>✅</td><td>✅ <code>/top/</code></td><td>✅</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Rate Limits -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0"><i class="bi bi-speedometer2"></i> Rate Limits & Best Practices</h4>
+            </div>
+            <div class="card-body">
+                <h6>Rate Limits</h6>
+                <ul>
+                    <li><strong>Self-hosted:</strong> No limits (respect source websites' terms)</li>
+                    <li><strong>Vercel Free Tier:</strong> 10-second timeout per request</li>
+                    <li><strong>Vercel Pro Tier:</strong> Up to 5 minutes per request</li>
+                </ul>
+                
+                <h6>Best Practices</h6>
+                <ul>
+                    <li>Use batch translation endpoint for large chapters on Vercel</li>
+                    <li>Implement client-side caching to reduce API calls</li>
+                    <li>Add delays between requests when scraping</li>
+                    <li>Use cover images from cache when available</li>
+                    <li>Respect robots.txt of source websites</li>
                 </ul>
             </div>
-
-            <div class="feature-card" style="margin-top: 2rem;">
-                <h3>📚 Supported Sources</h3>
-                <ul style="list-style: none; padding: 0; line-height: 2;">
-                    <li>• IXDZS8 (ixdzs8.com) - Hot daily updates</li>
-                    <li>• Shuhaige (m.shuhaige.net) - Extensive library</li>
-                    <li>• Biquge (biquge.company) - Classic layout</li>
-                    <li>• TTKan (ttkan.co) - Modern UI with rankings</li>
-                    <li>• XBiquge (xbiquge.info) - Weekly top novels</li>
-                </ul>
-            </div>
-
-            <div class="feature-card" style="margin-top: 2rem;">
-                <h3>⚙️ How to Use</h3>
-                <ol style="line-height: 2;">
-                    <li><strong>Search:</strong> Use the search page to find novels across all sources</li>
-                    <li><strong>Browse:</strong> Check the sources page for latest updates from each site</li>
-                    <li><strong>Read:</strong> Click on any novel to start reading chapters</li>
-                    <li><strong>TTS:</strong> Use the text-to-speech panel to listen to chapters</li>
-                    <li><strong>Translate:</strong> Enable auto-translation in settings for English content</li>
-                    <li><strong>Favourite:</strong> Star novels to save them in your favourites</li>
-                </ol>
-            </div>
-
-            <div class="feature-card" style="margin-top: 2rem;">
-                <h3>🔧 Settings</h3>
-                <p>Customize your reading experience:</p>
-                <ul style="list-style: none; padding: 0; line-height: 2;">
-                    <li>• Translation toggle (on/off)</li>
-                    <li>• TTS voice, speed, and pitch</li>
-                    <li>• Font size and line height</li>
-                    <li>• Theme selection (Light/Dark/Sepia)</li>
-                    <li>• Auto-scroll and highlight options</li>
-                </ul>
-            </div>
-
-            <div class="feature-card" style="margin-top: 2rem;">
-                <h3>📝 Note</h3>
-                <p>This is a fan-made project for personal use. All novel content belongs to their respective authors and sources. Please support the original authors by reading on official platforms when possible.</p>
-            </div>
-        </section>
+        </div>
     </main>
 
-    <style>
-        .info-section {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .info-section h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .info-section .subtitle {
-            color: var(--text-muted);
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-        .feature-card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-        .feature-card h3 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function copyBaseUrl() {
+        const baseUrl = document.getElementById('base-url').textContent;
+        navigator.clipboard.writeText(baseUrl).then(() => {
+            alert('Base URL copied to clipboard!');
+        });
+    }
+    </script>
 </body>
 </html>

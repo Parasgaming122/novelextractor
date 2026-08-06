@@ -11,5 +11,13 @@
       "src": "/(.*)",
       "dest": "webapp/main.py"
     }
-  ]
+  ],
+  "functions": {
+    "webapp/main.py": {
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "PYTHONPATH": "."
+  }
 }

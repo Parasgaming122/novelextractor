@@ -26,11 +26,106 @@
             <h2>🌐 Translation Settings</h2>
             
             <div class="setting-group">
+                <label for="translation-engine">Translation Engine</label>
+                <select id="translation-engine">
+                    <optgroup label="Free Engines (No API Key)">
+                        <option value="google_free">Google Translate (Free)</option>
+                        <option value="bing_free">Bing Translator (Free)</option>
+                        <option value="mymemory_free">MyMemory (Free)</option>
+                        <option value="pons_free">PONS Dictionary (Free)</option>
+                        <option value="linguee_free">Linguee (Free)</option>
+                        <option value="libre_free">LibreTranslate (Free)</option>
+                    </optgroup>
+                    <optgroup label="Premium Engines (API Key Required)">
+                        <option value="gemini_premium">Google Gemini AI</option>
+                        <option value="openai_premium">OpenAI GPT-4o</option>
+                        <option value="deepl_premium">DeepL Pro</option>
+                        <option value="microsoft_premium">Microsoft Translator</option>
+                        <option value="baidu_premium">Baidu Translate</option>
+                        <option value="yandex_premium">Yandex Translate</option>
+                    </optgroup>
+                </select>
+                <p class="setting-description">Choose your preferred translation engine. Free engines require no setup, premium engines need API keys below.</p>
+            </div>
+
+            <div class="setting-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="auto-translate">
                     <span>Auto-translate to English</span>
                 </label>
-                <p class="setting-description">Automatically translate novel content to English using Google Translate</p>
+                <p class="setting-description">Automatically translate novel content to English using selected engine</p>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>🔑 Premium API Keys</h2>
+            <p class="setting-description">Enter your API keys for premium translation engines. Keys are stored locally in your browser.</p>
+            
+            <div class="setting-group">
+                <label for="gemini-key">Google Gemini API Key</label>
+                <input type="password" id="gemini-key" placeholder="AIzaSy...">
+                <p class="setting-description">Required for Google Gemini AI translation. Get key at <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></p>
+            </div>
+
+            <div class="setting-group">
+                <label for="openai-key">OpenAI API Key</label>
+                <input type="password" id="openai-key" placeholder="sk-proj-...">
+                <p class="setting-description">Required for OpenAI GPT-4o translation. Get key at <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></p>
+            </div>
+
+            <div class="setting-group">
+                <label for="deepl-key">DeepL API Key</label>
+                <input type="password" id="deepl-key" placeholder="1234-5678...">
+                <div class="inline-group">
+                    <label class="checkbox-label inline">
+                        <input type="checkbox" id="deepl-free-tier" checked>
+                        <span>Free Tier</span>
+                    </label>
+                </div>
+                <p class="setting-description">Required for DeepL Pro translation. Get key at <a href="https://www.deepl.com/pro-api" target="_blank">DeepL API</a></p>
+            </div>
+
+            <div class="setting-group">
+                <label for="microsoft-key">Microsoft Translator API Key</label>
+                <input type="password" id="microsoft-key" placeholder="ms-azure-key...">
+                <p class="setting-description">Required for Microsoft Translator. Get key at <a href="https://portal.azure.com" target="_blank">Azure Portal</a></p>
+            </div>
+
+            <div class="setting-group">
+                <label for="baidu-appid">Baidu App ID</label>
+                <input type="text" id="baidu-appid" placeholder="2021000...">
+                <label for="baidu-secret">Baidu Secret Key</label>
+                <input type="password" id="baidu-secret" placeholder="secret_app_pass...">
+                <p class="setting-description">Required for Baidu Translate. Get credentials at <a href="https://fanyi-api.baidu.com" target="_blank">Baidu Open Platform</a></p>
+            </div>
+
+            <div class="setting-group">
+                <label for="yandex-key">Yandex API Key</label>
+                <input type="password" id="yandex-key" placeholder="yandex-passthrough...">
+                <p class="setting-description">Required for Yandex Translate. Get key at <a href="https://translate.yandex.com/developers" target="_blank">Yandex Translate API</a></p>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>✏️ Custom Translation Prompts</h2>
+            <p class="setting-description">Customize how AI engines translate your novels. Leave empty to use default prompts.</p>
+            
+            <div class="setting-group">
+                <label for="gemini-prompt">Gemini AI Custom Prompt</label>
+                <textarea id="gemini-prompt" rows="3" placeholder="Translate this Chinese novel text to narrative English, maintaining the original tone and style:"></textarea>
+                <p class="setting-description">Default: "Translate this Chinese novel text to narrative English, maintaining the original tone and style:"</p>
+            </div>
+
+            <div class="setting-group">
+                <label for="openai-prompt">OpenAI Custom System Prompt</label>
+                <textarea id="openai-prompt" rows="3" placeholder="You are a professional literary translator specializing in Chinese web novels. Translate this text to fluent, natural English while preserving cultural nuances:"></textarea>
+                <p class="setting-description">Default: "You are a professional literary translator specializing in Chinese web novels. Translate this text to fluent, natural English while preserving cultural nuances:"</p>
+            </div>
+
+            <div class="setting-group">
+                <label for="global-prompt">Global Custom Prompt (Overrides All)</label>
+                <textarea id="global-prompt" rows="3" placeholder="Enter a custom prompt to override engine-specific prompts..."></textarea>
+                <p class="setting-description">This prompt will be used for all AI engines instead of their defaults</p>
             </div>
         </section>
 
@@ -195,6 +290,26 @@
         function loadSettings() {
             const settings = JSON.parse(localStorage.getItem('novelReaderSettings') || '{}');
             
+            // Translation settings
+            if (settings.translationEngine) document.getElementById('translation-engine').value = settings.translationEngine;
+            if (settings.autoTranslate !== undefined) document.getElementById('auto-translate').checked = settings.autoTranslate;
+            
+            // API Keys
+            if (settings.geminiKey) document.getElementById('gemini-key').value = settings.geminiKey;
+            if (settings.openaiKey) document.getElementById('openai-key').value = settings.openaiKey;
+            if (settings.deeplKey) document.getElementById('deepl-key').value = settings.deeplKey;
+            if (settings.deeplFreeTier !== undefined) document.getElementById('deepl-free-tier').checked = settings.deeplFreeTier;
+            if (settings.microsoftKey) document.getElementById('microsoft-key').value = settings.microsoftKey;
+            if (settings.baiduAppid) document.getElementById('baidu-appid').value = settings.baiduAppid;
+            if (settings.baiduSecret) document.getElementById('baidu-secret').value = settings.baiduSecret;
+            if (settings.yandexKey) document.getElementById('yandex-key').value = settings.yandexKey;
+            
+            // Custom Prompts
+            if (settings.geminiPrompt) document.getElementById('gemini-prompt').value = settings.geminiPrompt;
+            if (settings.openaiPrompt) document.getElementById('openai-prompt').value = settings.openaiPrompt;
+            if (settings.globalPrompt) document.getElementById('global-prompt').value = settings.globalPrompt;
+            
+            // TTS settings
             if (settings.voice) document.getElementById('default-voice').value = settings.voice;
             if (settings.speed) {
                 document.getElementById('default-speed').value = settings.speed;
@@ -221,12 +336,31 @@
                 document.getElementById('max-width-value').textContent = `${settings.maxWidth}px`;
             }
             if (settings.sepDefault !== undefined) document.getElementById('sep-default').checked = settings.sepDefault;
-            if (settings.autoTranslate !== undefined) document.getElementById('auto-translate').checked = settings.autoTranslate;
         }
 
         // Save settings
         function saveSettings() {
             const settings = {
+                // Translation settings
+                translationEngine: document.getElementById('translation-engine').value,
+                autoTranslate: document.getElementById('auto-translate').checked,
+                
+                // API Keys
+                geminiKey: document.getElementById('gemini-key').value,
+                openaiKey: document.getElementById('openai-key').value,
+                deeplKey: document.getElementById('deepl-key').value,
+                deeplFreeTier: document.getElementById('deepl-free-tier').checked,
+                microsoftKey: document.getElementById('microsoft-key').value,
+                baiduAppid: document.getElementById('baidu-appid').value,
+                baiduSecret: document.getElementById('baidu-secret').value,
+                yandexKey: document.getElementById('yandex-key').value,
+                
+                // Custom Prompts
+                geminiPrompt: document.getElementById('gemini-prompt').value,
+                openaiPrompt: document.getElementById('openai-prompt').value,
+                globalPrompt: document.getElementById('global-prompt').value,
+                
+                // TTS settings
                 voice: document.getElementById('default-voice').value,
                 speed: parseFloat(document.getElementById('default-speed').value),
                 pitch: parseFloat(document.getElementById('default-pitch').value),
@@ -237,8 +371,7 @@
                 lineHeight: parseFloat(document.getElementById('line-height').value),
                 theme: document.getElementById('theme').value,
                 maxWidth: parseInt(document.getElementById('max-width').value),
-                sepDefault: document.getElementById('sep-default').checked,
-                autoTranslate: document.getElementById('auto-translate').checked
+                sepDefault: document.getElementById('sep-default').checked
             };
 
             localStorage.setItem('novelReaderSettings', JSON.stringify(settings));
