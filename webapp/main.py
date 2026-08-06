@@ -57,10 +57,16 @@ async def favourites_page(request: Request):
     return templates.TemplateResponse("favourites.html", {"request": request})
 
 
-@app.get("/info", response_class=HTMLResponse)
-async def info_page(request: Request):
-    """Render the info/about page"""
-    return templates.TemplateResponse("info.html", {"request": request})
+@app.get("/novel-info", response_class=HTMLResponse)
+async def novel_info_page(request: Request):
+    """Render the novel info page (not about page)"""
+    return templates.TemplateResponse("novel-info.html", {"request": request})
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about_page(request: Request):
+    """Render the about/info page"""
+    return templates.TemplateResponse("about.html", {"request": request})
 
 
 @app.get("/reader", response_class=HTMLResponse)
