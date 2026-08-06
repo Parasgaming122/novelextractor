@@ -1,25 +1,37 @@
 # Universal Novel Scraper & Extractor
 
-**Complete web novel scraping platform with Cloudflare bypass, multi-source search, parallel processing, home feeds, cover images, and intelligent chapter extraction.**
+**Complete web novel scraping platform with Cloudflare bypass, multi-source search, concurrent processing, home feeds, cover images, and intelligent chapter extraction.**
+
+## 🌟 Features
+
+- ✅ **Multi-Source Search**: Search across 5+ Chinese novel websites simultaneously
+- ✅ **Cloudflare Bypass**: 4-tier architecture to bypass anti-bot protection
+- ✅ **Smart Chapter Sorting**: Automatic detection and sorting by chapter numbers
+- ✅ **Cover Image Extraction**: Display novel artwork in search and results
+- ✅ **Home Feed**: Get hot novels and recommendations from each source
+- ✅ **FastAPI Web App**: Modern UI with TTS support for reading novels online
+- ✅ **Vercel Ready**: Deploy instantly to Vercel with zero configuration
 
 ## 🌐 Web Application & Vercel Deployment
 
-This project now includes a modern FastAPI web application with a beautiful UI for reading novels online. The web app features:
+This project includes a modern FastAPI web application with a beautiful UI for reading novels online.
+
+### Web App Features
 
 - **Homepage** - Hot novels feed and featured content
-- **Sources Page** - Browse novels by source website
-- **Search Page** - Multi-source search with Netflix-style horizontal sliders (use `--sep` flag for grouped results)
+- **Sources Page** - Browse novels by source website  
+- **Search Page** - Multi-source search with Netflix-style horizontal sliders
 - **Reader Page** - Full-featured novel reader with TTS support
-- **Settings Page** - Customize TTS, reading experience, and preferences
+- **Settings Page** - Customize TTS, reading experience, and themes
 
 ### Reader Features
 
 - 🎧 **Text-to-Speech** with multiple voices
 - 🔊 **Pitch Control** - Adjust voice pitch (0.5x - 2x)
 - ⏩ **Speed Control** - Playback speed from 0.5x to 5x
-- ✨ **Paragraph Highlighting** - Current paragraph is highlighted during TTS
-- 📜 **Auto-Scroll** - Page automatically follows TTS playback
-- ➡️ **Auto-Next Chapter** - Automatically loads next chapter when TTS finishes
+- ✨ **Paragraph Highlighting** - Current paragraph highlighted during TTS
+- 📜 **Auto-Scroll** - Page follows TTS playback
+- ➡️ **Auto-Next Chapter** - Loads next chapter automatically
 - 🎨 **Multiple Themes** - Light, Dark, and Sepia modes
 
 ### Deploy to Vercel
@@ -30,38 +42,30 @@ This project now includes a modern FastAPI web application with a beautiful UI f
 
 #### Option 2: Manual Deployment
 
-1. **Install Vercel CLI:**
-   ```bash
-   npm install -g vercel
-   ```
+```bash
+# Install Vercel CLI
+npm install -g vercel
 
-2. **Login to Vercel:**
-   ```bash
-   vercel login
-   ```
+# Login to Vercel
+vercel login
 
-3. **Deploy:**
-   ```bash
-   cd /path/to/universal_novel_scraper
-   vercel
-   ```
+# Deploy
+cd /path/to/universal_novel_scraper
+vercel
 
-4. **Production Deployment:**
-   ```bash
-   vercel --prod
-   ```
+# Production deployment
+vercel --prod
+```
 
 #### Vercel Configuration
 
-The project includes a `vercel.json` configuration file that sets up:
+The `vercel.json` file configures:
 - Python runtime environment
 - Static file serving for CSS/JS
 - API routes for backend endpoints
-- Proper routing for SPA behavior
+- Proper routing for the web application
 
-#### Environment Variables (if needed)
-
-No additional environment variables are required for basic functionality. The app uses the built-in scraper modules.
+**Environment Variables**: None required for basic functionality.
 
 #### Local Development
 
@@ -77,7 +81,7 @@ python main.py
 uvicorn webapp.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Access the app at `http://localhost:8000`
+Access at `http://localhost:8000`
 
 ---
 
@@ -139,14 +143,15 @@ This project provides a complete solution for scraping Chinese web novels from m
 ## What's New
 
 ### Latest Updates
-1. **🏠 Home Feed** - Get recommendations and hot novels from each source with cover images
-2. **🖼️ Cover Images** - Extract and display novel cover art in search, feed, and info results
-3. **🔀 Separate Results** - Use `--sep` flag to group results by source
-4. **☁️ Cloudflare Bypasser Integration** - New `bypasser.py` module with 4-tier architecture
-5. **⚡ Parallel Search** - Multi-threaded source searching (5x faster)
-6. **🔄 Auto-Retry Logic** - Exponential backoff for failed requests
-7. **📊 Better Progress Reporting** - Real-time search status updates
-8. **🛡️ Enhanced Headers** - Browser-like header emulation for all requests
+1. **✅ Fixed: Web App Search** - Search now works correctly in both CLI and web app
+2. **🏠 Home Feed** - Get recommendations and hot novels from each source with cover images
+3. **🖼️ Cover Images** - Extract and display novel cover art in search, feed, and info results
+4. **🔀 Separate Results** - Use `--sep` flag to group results by source
+5. **☁️ Cloudflare Bypasser Integration** - `bypasser.py` module with 4-tier architecture
+6. **⚡ Concurrent Search** - Efficient sequential source searching with rate limiting
+7. **🔄 Auto-Retry Logic** - Exponential backoff for failed requests
+8. **📊 Better Progress Reporting** - Real-time search status updates
+9. **🛡️ Enhanced Headers** - Browser-like header emulation for all requests
 
 ---
 
@@ -187,7 +192,7 @@ python universal_novel_scraper.py interactive
 
 ### Search for Novels
 
-Search across all sources in parallel:
+Search across all sources concurrently:
 
 ```bash
 python universal_novel_scraper.py search "novel title"
@@ -210,6 +215,8 @@ Search with results separated by source:
 ```bash
 python universal_novel_scraper.py search "novel title" --sep --json
 ```
+
+**Note**: The search function works identically in both CLI and the web app API.
 
 ### Get Home Feed
 
@@ -425,7 +432,7 @@ All sources now support **cover image extraction** in search results, home feeds
 ## Quality of Life Features
 
 ### Automatic Improvements
-1. **Parallel Search**: No more waiting for each source sequentially
+1. **Concurrent Search**: Efficient source searching with rate limiting
 2. **Better Error Messages**: Clear feedback on what went wrong
 3. **Progress Indicators**: See which sources are being searched
 4. **Smart Filename Sanitization**: Safe filenames for exported chapters

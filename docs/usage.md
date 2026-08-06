@@ -128,7 +128,7 @@ python3 universal_novel_scraper.py extract <URL> [--json]
 | `--json` | Output as JSON instead of plain text |
 
 ### `search`
-Search for novels across sources.
+Search for novels across sources concurrently.
 
 ```bash
 python3 universal_novel_scraper.py search <QUERY> [--all] [--sep] [--json] [--page N]
@@ -141,6 +141,8 @@ python3 universal_novel_scraper.py search <QUERY> [--all] [--sep] [--json] [--pa
 | `--sep` | Separate results by source |
 | `--json` | Output as JSON |
 | `--page N` | Page number for pagination |
+
+**Note**: The same search function is used in both CLI and web app (`/api/search` endpoint).
 
 ### `feed`
 Get home feed / recommendations.
@@ -187,13 +189,23 @@ The scraper automatically handles Cloudflare-style browser verification. If you 
 python3 universal_novel_scraper.py extract <URL> --json
 ```
 
-### 2. High Confidence Extraction
+### 2. Search Works Everywhere
+The search functionality is identical in both CLI and web app:
+```bash
+# CLI search
+python3 universal_novel_scraper.py search "洪荒"
+
+# Web app search (via API)
+curl "http://localhost:8000/api/search?q=%E6%B4%AA%E8%8D%92"
+```
+
+### 3. High Confidence Extraction
 Check the `confidence` score in JSON output:
 - `> 0.8`: High quality extraction
 - `0.5 - 0.8`: Moderate quality, may need manual review
 - `< 0.5`: Low quality, likely failed extraction
 
-### 3. Batch Processing
+### 4. Batch Processing
 Combine with shell scripts for batch operations:
 ```bash
 # Extract multiple chapters
@@ -202,7 +214,7 @@ while read url; do
 done < urls.txt
 ```
 
-### 4. Filter by Source
+### 5. Filter by Source
 Use `--sep` to see which source provides the best results:
 ```bash
 python3 universal_novel_scraper.py search "your query" --sep --json
@@ -211,7 +223,10 @@ python3 universal_novel_scraper.py search "your query" --sep --json
 ## Troubleshooting
 
 ### "正在验证浏览器" (Browser Verification)
-✅ **Fixed**: The bypasser now automatically handles JavaScript challenges. No action needed.
+✅ **Fixed**: The bypasser automatically handles JavaScript challenges. No action needed.
+
+### Search Not Working in Web App
+✅ **Fixed**: The search API now correctly calls `search_novel(q)` without unsupported parameters. Both CLI and web app use the same function.
 
 ### Low Confidence Score
 - The chapter might be protected or use unusual formatting
