@@ -17,7 +17,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from universal_novel_scraper import search_novel, fetch_novel_info, extract_chapter_content
 from bypasser import fetch as bypasser_fetch
 
+# Import translation router
+from webapp.routers.translate_router import router as translate_router
+
 app = FastAPI(title="Novel Reader", description="A modern novel reading platform with TTS support")
+
+# Include translation router
+app.include_router(translate_router)
 
 # Enable CORS for Vercel deployment
 app.add_middleware(

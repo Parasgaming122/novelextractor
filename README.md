@@ -479,8 +479,10 @@ All sources now support **cover image extraction** in search results, home feeds
 
 For more detailed information, see our comprehensive documentation:
 
+- **[Documentation Index](docs/README_DOCS.md)** - Start here for all documentation
+- **[API Reference](docs/api.md)** - Complete REST API documentation with examples
+- **[Usage Guide](docs/usage.md)** - CLI and web app usage instructions
 - **[Architecture Guide](docs/architecture.md)** - System design, components, and data flow
-- **[Usage Guide](docs/usage.md)** - Complete command reference with examples
 - **[Development Guide](docs/development.md)** - How to add new sources and contribute
 
 ---
