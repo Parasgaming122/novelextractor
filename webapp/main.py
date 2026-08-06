@@ -89,7 +89,7 @@ async def api_search(q: str = Query(...), sep: bool = Query(False)):
     - sep: if true, separate results by source
     """
     try:
-        results = search_novel(q, parallel=True)
+        results = search_novel(q)
         
         if sep:
             # Group by source
