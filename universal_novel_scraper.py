@@ -92,7 +92,7 @@ SOURCES = {
         "latest_chapters_first": False,
         "duplicate_latest_count": 0,
         "feed_url": "https://www.xbiquge.info/top/week_0_1.html",
-        "feed_selector": "#maincontent tr, .grid tr",
+        "feed_selector": ".box hot dl, dl",
     },
     "biquge_company": {
         "name": "biquge.company",
@@ -297,8 +297,16 @@ def fetch_url(url: str, headers: Optional[Dict] = None, timeout: int = 30,
     Returns:
         HTML content as string, or None on failure
     """
+    # For certain domains that don't work well with bypasser, skip it
+    bypasser_unfriendly_domains = ['xbiquge.info', 'www.xbiquge.info']
+    should_use_bypasser = use_bypasser and BYPASSER_AVAILABLE
+    domain = urlparse(url).netloc.lower()
+    
+    if domain in bypasser_unfriendly_domains:
+        should_use_bypasser = False
+    
     # Try bypasser first if available and requested
-    if use_bypasser and BYPASSER_AVAILABLE:
+    if should_use_bypasser:
         try:
             bp = _get_bypasser()
             if bp:
@@ -306,7 +314,8 @@ def fetch_url(url: str, headers: Optional[Dict] = None, timeout: int = 30,
                     result = bp.fetch(url, method="POST", data=data)
                 else:
                     result = bp.fetch(url, method="GET")
-                if result and len(result.strip()) > 100:
+                # Check if result is valid HTML (not binary garbage)
+                if result and len(result.strip()) > 100 and not result.startswith('\x00') and '<html' in result.lower():
                     return result
         except Exception as e:
             # Fallback to regular requests
@@ -329,7 +338,20 @@ def fetch_url(url: str, headers: Optional[Dict] = None, timeout: int = 30,
                 timeout=timeout,
                 allow_redirects=True,
             )
-        response.encoding = response.apparent_encoding
+        
+        # Handle encoding properly for Chinese sites (especially GBK/GB2312)
+        # First check Content-Type header for charset
+        content_type = response.headers.get('Content-Type', '')
+        if 'charset=' in content_type.lower():
+            # Use charset from Content-Type header if present
+            pass
+        elif 'xbiquge' in domain or 'biquge' in domain:
+            # Chinese novel sites often use GBK/GB2312 encoding
+            # Try to detect and decode properly
+            response.encoding = 'utf-8'  # Modern xbiquge uses UTF-8
+        else:
+            response.encoding = response.apparent_encoding
+        
         if response.status_code == 200:
             return response.text
         else:
@@ -676,9 +698,11 @@ def get_home_feed(source_id: str, page: int = 1) -> List[SearchResult]:
             ))
     
     elif source_id == "xbiquge":
-        # XBiquge uses h3 tags for novel titles in top lists
-        for item in soup.find_all("h3"):
-            title_el = item.find("a")
+        # XBiquge uses dl > dt/dd structure for top lists
+        # Each novel is in a <dl> tag with dt (cover) and dd (info) elements
+        for item in soup.find_all("dl"):
+            # Get title from h3 > a inside dd
+            title_el = item.select_one("dd h3 a")
             if not title_el:
                 continue
             
@@ -692,25 +716,47 @@ def get_home_feed(source_id: str, page: int = 1) -> List[SearchResult]:
                 continue
                 
             # Only accept /XX/XX/ pattern (novel info pages)
-            if not re.match(r'^/\d+/\d+/$', href):
+            if not re.match(r'^/\d+/\d+/?$', href):
                 continue
             
             url = urljoin(config["base_url"], href)
             
-            # Get parent div to find cover image
-            parent_div = item.parent
-            cover_el = parent_div.select_one("img") if parent_div else None
+            # Get cover image from dt > a > img
+            cover_el = item.select_one("dt img")
             cover_url = urljoin(config["base_url"], cover_el.get("src", "")) if cover_el else ""
+            
+            # Get author from .book_other span a (first one after title)
+            author_els = item.select("dd.book_other span a")
+            author = author_els[0].get_text(strip=True) if author_els else ""
+            
+            # Get status from second .book_other dd
+            status_els = item.select("dd.book_other")
+            status = ""
+            update_time = ""
+            for dd in status_els:
+                text = dd.get_text(strip=True)
+                if "状态：" in text:
+                    status = text.replace("状态：", "").strip()
+                if "更新时间：" in text:
+                    update_time = text.replace("更新时间：", "").strip()
+            
+            # Get latest chapter from last .book_other dd's a tag
+            latest_chapter_el = item.select_one("dd.book_other:last-of-type a")
+            latest_chapter = latest_chapter_el.get_text(strip=True) if latest_chapter_el else ""
             
             results.append(SearchResult(
                 title=title,
                 url=url,
                 source=source_id,
+                author=author,
+                status=status,
+                latest_chapter=latest_chapter,
                 cover_url=cover_url,
             ))
     
     elif source_id == "biquge" or source_id == "biquge_company":
         # Handle both 'biquge' and 'biquge_company' source IDs
+        seen_urls = set()  # Track seen URLs to avoid duplicates
         for item in soup.select(".bookbox, .bookinfo"):
             title_el = item.select_one(".bookname a")
             if not title_el:
@@ -718,6 +764,11 @@ def get_home_feed(source_id: str, page: int = 1) -> List[SearchResult]:
             
             title = title_el.get_text(strip=True)
             url = urljoin(config["base_url"], title_el.get("href", ""))
+            
+            # Skip duplicates
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
             
             author_el = item.select_one(".author")
             author = author_el.get_text(strip=True).replace("作者：", "") if author_el else ""
@@ -743,37 +794,37 @@ def get_home_feed(source_id: str, page: int = 1) -> List[SearchResult]:
             ))
     
     elif source_id == "ttkan":
-        # TTKan uses Vue.js - try multiple selectors
-        for item in soup.select(".rank-item, .novel-item, li, .item, .novel_cell"):
-            title_el = item.select_one("a[href*='/novels/'], a[href*='/novel/'], h3 a, .title a, .bookname a")
-            if not title_el:
-                # Try finding links with novel-like structure
-                links = item.find_all("a", href=True)
-                for link in links:
-                    href = link.get("href", "")
-                    if "/novels/" in href or "/novel/" in href:
-                        title_el = link
-                        break
-            
-            if not title_el:
+        # TTKan uses AMP-based layout for rank page
+        # Structure: div.pure-u-xl-1-5 > a > amp-img (with alt as title) + sibling div with info
+        for item in soup.select(".pure-u-xl-1-5, .pure-u-lg-1-4, .pure-u-md-1-3, .pure-u-sm-1-3, .pure-u-13-24"):
+            # Get the link from the first child anchor
+            link_el = item.select_one("a[href*='/novel/']")
+            if not link_el:
                 continue
             
-            title = title_el.get_text(strip=True)
+            url = urljoin(config["base_url"], link_el.get("href", ""))
+            
+            # Skip non-chapter links (like search result links)
+            if "/novel/chapters/" not in url and "/novel/search" in url:
+                continue
+            
+            # Extract title from amp-img or img alt attribute
+            img_el = item.select_one("amp-img, img")
+            if img_el:
+                title = img_el.get("alt", "").strip()
+                cover_src = img_el.get("src", "") or img_el.get("data-src", "")
+                cover_url = urljoin(config["base_url"], cover_src) if cover_src else ""
+            else:
+                # Fallback to text extraction
+                title = link_el.get_text(strip=True)
+                cover_url = ""
+            
             if len(title) < 2 or len(title) > 100:
                 continue
-                
-            url = urljoin(config["base_url"], title_el.get("href", ""))
             
-            author_el = item.select_one(".author, .author-name")
+            # Try to find author in sibling ul > li elements
+            author_el = item.select_one("ul li:nth-of-type(2) a")
             author = author_el.get_text(strip=True) if author_el else ""
-            
-            # Extract cover image
-            cover_el = item.select_one("img")
-            cover_url = urljoin(config["base_url"], cover_el.get("src", "") or cover_el.get("data-src", "")) if cover_el else ""
-            
-            # Extract rating if available
-            rating_el = item.select_one(".rating, .score, .stars")
-            rating = rating_el.get_text(strip=True) if rating_el else ""
             
             results.append(SearchResult(
                 title=title,
@@ -781,14 +832,14 @@ def get_home_feed(source_id: str, page: int = 1) -> List[SearchResult]:
                 source=source_id,
                 author=author,
                 cover_url=cover_url,
-                rating=rating,
             ))
     
     elif source_id == "shuhaige":
-        # Shuhaige uses p.bookname inside li elements
-        for item in soup.select("li"):
+        # Shuhaige uses ul.list > li structure with detailed info
+        # Structure: li > a(img) + p.bookname > a(title) + p.data(author/category/status) + p.intro(desc) + p.data(latest chapter)
+        for item in soup.select("ul.list li, .library ul li"):
             # Look for book title in p.bookname
-            title_el = item.select_one("p[class*='book'] a")
+            title_el = item.select_one("p.bookname a")
             if not title_el:
                 continue
             
@@ -798,15 +849,35 @@ def get_home_feed(source_id: str, page: int = 1) -> List[SearchResult]:
                 
             url = urljoin(config["base_url"], title_el.get("href", ""))
             
-            # Get image from parent li
-            cover_el = item.select_one("img")
+            # Get image from first child anchor
+            cover_el = item.select_one("a img")
             cover_url = urljoin(config["base_url"], cover_el.get("src", "") or cover_el.get("data-src", "")) if cover_el else ""
+            
+            # Extract author from p.data > a.layui-btn-xs (first button link)
+            author_el = item.select_one("p.data a.layui-btn-xs")
+            author = author_el.get_text(strip=True) if author_el else ""
+            
+            # Extract status from p.data span (layui-btn-danger or layui-btn-normal)
+            status_el = item.select_one("p.data span.layui-btn-danger, p.data span.layui-btn-normal")
+            status = status_el.get_text(strip=True) if status_el else ""
+            
+            # Extract description from p.intro
+            desc_el = item.select_one("p.intro")
+            description = desc_el.get_text(strip=True)[:200] + "..." if desc_el and len(desc_el.get_text(strip=True)) > 200 else (desc_el.get_text(strip=True) if desc_el else "")
+            
+            # Extract latest chapter from last p.data > a
+            latest_els = item.select("p.data a")
+            latest_chapter = latest_els[-1].get_text(strip=True) if latest_els else ""
             
             results.append(SearchResult(
                 title=title,
                 url=url,
                 source=source_id,
+                author=author,
+                description=description,
                 cover_url=cover_url,
+                status=status,
+                latest_chapter=latest_chapter,
             ))
     
     else:
